@@ -1,13 +1,37 @@
 #include "snake.h"
 #include <SDL.h>
+#include <SDL_events.h>
 #include <SDL_render.h>
 #include <SDL_video.h>
 
 #define WINDOW_X 0
 #define WINDOW_Y 0
-#define WINDOW_WIDTH 1000
-#define WINDOW_HEIGHT 1000
+#define WINDOW_WIDTH 800 
+#define WINDOW_HEIGHT 800 
 
+
+#define GRID_SIZE 20 
+#define GRID_DIM 660 
+
+void render_grid(SDL_Renderer *renderer, int x, int y) {
+    
+    SDL_SetRenderDrawColor(renderer, 0x55, 0x55, 0x55, 255);
+    int cell_size = GRID_DIM / GRID_SIZE;
+
+
+    SDL_Rect cell;
+    cell.w = cell_size;
+    cell.h = cell_size;
+
+    for(int i = 0; i < GRID_SIZE; i++){
+        for(int j = 0; j < GRID_SIZE; j++){
+            cell.x = x + (i * cell_size);
+            cell.y = y + (j * cell_size);
+            SDL_RenderDrawRect(renderer, &cell);
+        }
+    }
+   return; 
+}
 
 
 int WinMain(int args, int **argv) {
@@ -41,7 +65,43 @@ int WinMain(int args, int **argv) {
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
 
-    SDL_Delay(2000);
+
+    bool quit = false;
+    SDL_Event event;
+
+
+    while(!quit) {
+        while(SDL_PollEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT:
+                    quit = true;
+                    break;
+                case SDL_KEYUP:
+                    break;
+                case SDL_KEYDOWN:
+                    switch(event.key.keysym.sym) {
+                        case SDLK_ESCAPE:
+                            quit = true;
+                            break;
+                    }
+                    break;
+            }
+        } 
+
+        SDL_RenderClear(renderer);
+        //render loop start 
+            
+
+        render_grid(renderer, 100, 100);
+
+
+        //render loop end
+        SDL_SetRenderDrawColor(renderer, 0x11, 0x11, 0x11, 255);
+        SDL_RenderPresent(renderer);
+    }
+
+
+
 
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
