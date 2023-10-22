@@ -6,12 +6,56 @@
 
 #define WINDOW_X 0
 #define WINDOW_Y 0
-#define WINDOW_WIDTH 800 
-#define WINDOW_HEIGHT 800 
+#define WINDOW_WIDTH 750 
+#define WINDOW_HEIGHT 750 
 
 
 #define GRID_SIZE 20 
 #define GRID_DIM 660 
+
+enum {
+    SNAKE_UP,
+    SNAKE_DOWN,
+    SNAKE_LEFT,
+    SNAKE_RIGHT,
+};
+
+struct snake {
+    int x;
+    int y;
+    int dir;
+
+    struct snake *next;
+};
+typedef struct snake Snake;
+
+Snake *head;
+Snake *tail;
+
+void init_snake() {
+    Snake *new = malloc(sizeof(Snake));
+    new->x = rand() % (GRID_SIZE / 2) + (GRID_SIZE /4);
+    new->y = rand() % (GRID_SIZE / 2) + (GRID_SIZE /4);
+    new->dir = SNAKE_UP;
+    new->next = NULL;
+
+    head = new;
+    tail = new;
+}
+
+void increase_snake() {
+
+    Snake *new = malloc(sizeof(Snake));
+    new->x = tail->x;
+    new->y = tail->y - 1;
+    new->dir = tail->dir;
+
+    new->next = NULL;
+    tail->next = new;
+
+    tail = new;
+
+}
 
 void render_grid(SDL_Renderer *renderer, int x, int y) {
     
@@ -36,6 +80,8 @@ void render_grid(SDL_Renderer *renderer, int x, int y) {
 
 int WinMain(int args, int **argv) {
 
+    init_snake();
+    increase_snake();
 
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -61,9 +107,9 @@ int WinMain(int args, int **argv) {
         fprintf(stderr, "ERROR: no renderer");
     }
 
-    SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 255);
-    SDL_RenderClear(renderer);
-    SDL_RenderPresent(renderer);
+    int grid_x = (WINDOW_WIDTH / 2 - GRID_DIM / 2);
+    int grid_y = (WINDOW_HEIGHT / 2 - GRID_DIM / 2);
+
 
 
     bool quit = false;
@@ -92,7 +138,7 @@ int WinMain(int args, int **argv) {
         //render loop start 
             
 
-        render_grid(renderer, 100, 100);
+        render_grid(renderer, grid_x, grid_y);
 
 
         //render loop end
