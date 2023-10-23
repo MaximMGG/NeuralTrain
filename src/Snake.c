@@ -1,6 +1,7 @@
 #include "snake.h"
 #include <SDL.h>
 #include <SDL_events.h>
+#include <SDL_keycode.h>
 #include <SDL_render.h>
 #include <SDL_video.h>
 
@@ -57,6 +58,75 @@ void increase_snake() {
 
 }
 
+void move_snake() {
+
+    int prev_x = head->x;
+    int prev_y = head->y;
+
+    switch(head->dir) {
+        case SNAKE_UP:
+            head->y--;
+            break;
+        case SNAKE_DOWN:
+            head->y++;
+            break;
+        case SNAKE_LEFT:
+            head->x--;
+            break;
+        case SNAKE_RIGHT:
+            head->x++;
+            break;
+
+    }
+
+    Snake *track = head;
+
+    if(track->next != NULL) {
+        track = track->next;
+    }
+
+    while(track != NULL) {
+
+        int save_x = track->x;
+        int save_y = track->y;
+
+        track->x = prev_x;
+        track->y = prev_y;
+
+        track = track->next;
+
+        prev_x = save_x;
+        prev_y = save_y;
+    }
+}
+
+
+void render_snake(SDL_Renderer *renderer, int x, int y) {
+
+    SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 255);
+
+    int seq_size = GRID_DIM / GRID_SIZE;
+    SDL_Rect seq;
+
+    seq.w = seq_size;
+    seq.h = seq_size;
+
+    Snake *track = head;
+
+    while(track != NULL) {
+        seq.x =  x + track->x * seq_size;
+        seq.y =  y + track->y * seq_size;
+
+        SDL_RenderFillRect(renderer, &seq);
+
+        track = track->next;
+    }
+
+
+
+
+}
+
 void render_grid(SDL_Renderer *renderer, int x, int y) {
     
     SDL_SetRenderDrawColor(renderer, 0x55, 0x55, 0x55, 255);
@@ -81,6 +151,8 @@ void render_grid(SDL_Renderer *renderer, int x, int y) {
 int WinMain(int args, int **argv) {
 
     init_snake();
+    increase_snake();
+    increase_snake();
     increase_snake();
 
     SDL_Window *window;
@@ -129,6 +201,18 @@ int WinMain(int args, int **argv) {
                         case SDLK_ESCAPE:
                             quit = true;
                             break;
+                        case SDLK_UP:
+                            head->dir = SNAKE_UP;
+                            break;
+                        case SDLK_DOWN:
+                            head->dir = SNAKE_DOWN;
+                            break;
+                        case SDLK_LEFT:
+                            head->dir = SNAKE_LEFT;
+                            break;
+                        case SDLK_RIGHT:
+                            head->dir = SNAKE_RIGHT;
+                            break;
                     }
                     break;
             }
@@ -138,12 +222,17 @@ int WinMain(int args, int **argv) {
         //render loop start 
             
 
+        move_snake();
         render_grid(renderer, grid_x, grid_y);
+        render_snake(renderer, grid_x, grid_y);
 
 
         //render loop end
         SDL_SetRenderDrawColor(renderer, 0x11, 0x11, 0x11, 255);
         SDL_RenderPresent(renderer);
+
+        SDL_Delay(200);
+
     }
 
 
