@@ -171,26 +171,54 @@ void render_snake(SDL_Renderer *renderer, int x, int y) {
 
 void render_grid(SDL_Renderer *renderer, int x, int y) {
 
-  SDL_SetRenderDrawColor(renderer, 0x55, 0x55, 0x55, 255);
-  int cell_size = GRID_DIM / GRID_SIZE;
+    SDL_SetRenderDrawColor(renderer, 0x55, 0x55, 0xff, 255);
 
-  SDL_Rect cell;
-  cell.w = cell_size;
-  cell.h = cell_size;
+#if 0
 
-  for (int i = 0; i < GRID_SIZE; i++) {
-    for (int j = 0; j < GRID_SIZE; j++) {
-      cell.x = x + (i * cell_size);
-      cell.y = y + (j * cell_size);
-      SDL_RenderDrawRect(renderer, &cell);
+    int cell_size = GRID_DIM / GRID_SIZE;
+    SDL_Rect cell;
+    cell.w = cell_size;
+    cell.h = cell_size;
+
+    for (int i = 0; i < GRID_SIZE; i++) {
+        for (int j = 0; j < GRID_SIZE; j++) {
+            cell.x = x + (i * cell_size);
+            cell.y = y + (j * cell_size);
+            SDL_RenderDrawRect(renderer, &cell);
+        }
     }
-  }
-  return;
+#else
+
+    SDL_Rect outline;
+    outline.x = x;
+    outline.y = y;
+    outline.w = GRID_DIM;
+    outline.h = GRID_DIM;
+
+    SDL_RenderDrawRect(renderer, &outline);
+#endif
+
+    return;
 }
 
 void gen_apple() {
-  Apple.x = rand() % GRID_SIZE;
-  Apple.y = rand() % GRID_SIZE;
+
+    bool in_snake;
+    do {
+        in_snake = false;
+        Apple.x = rand() % GRID_SIZE;
+        Apple.y = rand() % GRID_SIZE;
+
+        Snake *track = head;
+
+        while(track != NULL) {
+            if (track->x == Apple.x && track->y == Apple.y) {
+                in_snake = true;
+            }
+            track = track->next;
+        }
+    }
+    while(in_snake);
 }
 
 void render_apple(SDL_Renderer *renderer, int x, int y) {
