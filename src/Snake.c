@@ -265,7 +265,7 @@ void detect_creach() {
 
 }
 
-int WinMain(int args, int **argv) {
+int WinMain() {
 
   srand(time(NULL));
 
