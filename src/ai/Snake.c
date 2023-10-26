@@ -10,8 +10,9 @@
 #define WINDOW_WIDTH 750
 #define WINDOW_HEIGHT 750
 
-#define GRID_SIZE 20
+#define GRID_SIZE 28
 #define GRID_DIM 660
+#define DELAY 20
 
 enum {
   SNAKE_UP,
@@ -381,13 +382,34 @@ int state(int try) {
         reward += 100;
     }
     //move towards apple
-    int diff_x;
-    int diff_y;
-    int try_diff_x;
-    int try_diff_y;
+    int diff_x = abs(head->x - Apple.x);
+    int diff_y = abs(head->y - Apple.y);
+    int try_diff_x = abs(try_x - Apple.x);
+    int try_diff_y = abs(try_y - Apple.y);
+
+    if (try_diff_x < diff_x) {
+        reward += 5;
+    }
+    if (try_diff_y < diff_y) {
+        reward += 5;
+    }
+
+
+    //detect tail
+
+    Snake *track = head;
+
+    if (track->next != NULL) {
+        track = track->next;
+    }
+
+    while(track != NULL) {
+        if (try_x == track->x && try_y == track->y) {
+            reward += -100;
+        }
+        track = track->next;
+    }
     
-
-
     return reward;
 }
 
@@ -497,7 +519,7 @@ int WinMain() {
     SDL_SetRenderDrawColor(renderer, 0x11, 0x11, 0x11, 255);
     SDL_RenderPresent(renderer);
 
-    SDL_Delay(80);
+    SDL_Delay(DELAY);
   }
 
   SDL_DestroyRenderer(renderer);
