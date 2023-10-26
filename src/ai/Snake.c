@@ -1,5 +1,6 @@
 #include "snake.h"
 #include <SDL.h>
+#include <SDL_blendmode.h>
 #include <SDL_events.h>
 #include <SDL_keycode.h>
 #include <SDL_render.h>
@@ -7,12 +8,12 @@
 
 #define WINDOW_X 0
 #define WINDOW_Y 0
-#define WINDOW_WIDTH 750
-#define WINDOW_HEIGHT 750
+#define WINDOW_WIDTH 750 
+#define WINDOW_HEIGHT 750 
 
 #define GRID_SIZE 28
-#define GRID_DIM 660
-#define DELAY 20
+#define GRID_DIM 560 
+#define DELAY 40
 
 enum {
   SNAKE_UP,
@@ -150,24 +151,51 @@ void reset_snake() {
 
 void render_snake(SDL_Renderer *renderer, int x, int y) {
 
-  SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 255);
+    SDL_SetRenderDrawColor(renderer, 0x00, 0xff, 0x00, 255);
 
-  int seq_size = GRID_DIM / GRID_SIZE;
-  SDL_Rect seq;
+    int seq_size = GRID_DIM / GRID_SIZE;
 
-  seq.w = seq_size;
-  seq.h = seq_size;
+    SDL_Rect seq;
+    seq.w = seq_size - 2;
+    seq.h = seq_size - 2;
 
-  Snake *track = head;
+    SDL_Rect seq_out;
+    seq_out.w = seq_size;
+    seq_out.h = seq_size;
 
-  while (track != NULL) {
-    seq.x = x + track->x * seq_size;
-    seq.y = y + track->y * seq_size;
+    Snake *track = head;
 
-    SDL_RenderFillRect(renderer, &seq);
+    int bright = 255;
+    int b_dir = 0;
 
-    track = track->next;
-  }
+    while (track != NULL) {
+
+        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, bright, 255);
+        seq_out.x = x + track->x * seq_size;
+        seq_out.y = y + track->y * seq_size;
+
+        SDL_RenderFillRect(renderer, &seq_out);
+
+        SDL_SetRenderDrawColor(renderer, 0x00, bright, 0x00, 255);
+        seq.x = x + track->x * seq_size + 1;
+        seq.y = y + track->y * seq_size + 1;
+
+        SDL_RenderFillRect(renderer, &seq);
+
+        track = track->next;
+        if (b_dir == 0) {
+            bright -= 5;
+            if (bright < 150) {
+                b_dir = 1;
+            }
+        }
+        if (b_dir == 1) {
+            bright += 5;
+            if (bright > 250) {
+                b_dir = 0;
+            }
+        }
+    }
 }
 
 void render_grid(SDL_Renderer *renderer, int x, int y) {
@@ -190,13 +218,18 @@ void render_grid(SDL_Renderer *renderer, int x, int y) {
     }
 #else
 
-    SDL_Rect outline;
-    outline.x = x;
-    outline.y = y;
-    outline.w = GRID_DIM;
-    outline.h = GRID_DIM;
+    for(int i = 0; i < 255; i++) {
+    
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0xff, 255 - i);
 
-    SDL_RenderDrawRect(renderer, &outline);
+        SDL_Rect outline;
+        outline.x = x - i;
+        outline.y = y - i;
+        outline.w = GRID_DIM + i + i;
+        outline.h = GRID_DIM + i + i;
+
+        SDL_RenderDrawRect(renderer, &outline);
+    }
 #endif
 
     return;
@@ -378,7 +411,7 @@ int state(int try) {
         reward += -100;
     }
     //detect apple
-    if (try_x == Apple.x || try_y == Apple.y) {
+    if (try_x == Apple.x && try_y == Apple.y) {
         reward += 100;
     }
     //move towards apple
@@ -457,11 +490,14 @@ int WinMain() {
     fprintf(stderr, "ERROR: window not create");
   }
 
+
   renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
   if (!renderer) {
     fprintf(stderr, "ERROR: no renderer");
   }
+
+  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
   int grid_x = (WINDOW_WIDTH / 2 - GRID_DIM / 2);
   int grid_y = (WINDOW_HEIGHT / 2 - GRID_DIM / 2);
