@@ -300,10 +300,101 @@ void turn_right() {
     }
 }
 
+enum {
+    TRY_FORWARD,
+    TRY_LEFT,
+    TRY_RIGHT,
+};
+
+
+int state(int try) {
+    int reward = 0;
+
+    int try_x = head->x;
+    int try_y = head->y;
+
+    switch (head->dir) {
+        case SNAKE_UP:
+            switch(try) {
+                case TRY_FORWARD:
+                    try_y--;
+                    break;
+                case TRY_LEFT:
+                    try_x--;
+                    break;
+                case TRY_RIGHT:
+                    try_x++;
+                    break;
+            }
+            break;
+        case SNAKE_DOWN:
+            switch(try) {
+                case TRY_FORWARD:
+                    try_y++;
+                    break;
+                case TRY_LEFT:
+                    try_x++;
+                    break;
+                case TRY_RIGHT:
+                    try_x--;
+                    break;
+            }
+            break;
+        case SNAKE_LEFT:
+            switch(try) {
+                case TRY_FORWARD:
+                    try_x--;
+                    break;
+                case TRY_LEFT:
+                    try_y++;
+                    break;
+                case TRY_RIGHT:
+                    try_y--;
+                    break;
+            }
+            break;
+        case SNAKE_RIGHT:
+            switch(try) {
+                case TRY_FORWARD:
+                    try_x++;
+                    break;
+                case TRY_LEFT:
+                    try_y--;
+                    break;
+                case TRY_RIGHT:
+                    try_y++;
+                    break;
+            }
+            break;
+        
+    }
+
+    //detect wall crach
+    if (try_x < 0 || try_x > GRID_SIZE - 1) {
+        reward += -100;
+    }
+    if (try_y < 0 || try_y > GRID_SIZE - 1) {
+        reward += -100;
+    }
+    //detect apple
+    if (try_x == Apple.x || try_y == Apple.y) {
+        reward += 100;
+    }
+    //move towards apple
+    int diff_x;
+    int diff_y;
+    int try_diff_x;
+    int try_diff_y;
+    
+
+
+    return reward;
+}
+
 void ai() {
-    int try_f;
-    int try_l;
-    int try_r;
+    int try_f = state(TRY_FORWARD);
+    int try_l = state(TRY_LEFT);
+    int try_r = state(TRY_RIGHT);
     
     if (try_f >= try_l && try_f >= try_r) {
         //continue forward
@@ -393,12 +484,14 @@ int WinMain() {
     detect_apple();
     detect_creach();
 
+    ai();
+
+
     render_grid(renderer, grid_x, grid_y);
     render_snake(renderer, grid_x, grid_y);
     render_apple(renderer, grid_x, grid_y);
 
 
-    ai();
 
     // render loop end
     SDL_SetRenderDrawColor(renderer, 0x11, 0x11, 0x11, 255);
